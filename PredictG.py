@@ -253,6 +253,7 @@ def get_dGAl2O3_from_structure():
     """
     print('------------------------------')    
     initial_formula = 'Al2O3'
+    print('approximating dGf for %s...' % initial_formula)    
     path_to_structure = 'POSCAR.mp-1143_Al2O3'
     path_to_masses = 'masses.json'
     path_to_chempots = 'Gels.json'
@@ -273,6 +274,7 @@ def get_dGAl2O3_without_structure():
     """
     print('------------------------------')
     initial_formula = 'Al2O3'
+    print('approximating dGf for %s...' % initial_formula)
     path_to_structure = False
     V = 8.742 # A^3/atom
     path_to_masses = 'masses.json'
@@ -294,9 +296,9 @@ def main():
     Returns:
         PredictG object
     """
-    obj = get_dGAl2O3_from_structure()
-    obj = get_dGAl2O3_without_structure()
-    return obj
+    obj1 = get_dGAl2O3_from_structure()
+    obj2 = get_dGAl2O3_without_structure()
+    return obj1, obj2
 
 if __name__ == '__main__':
-    obj = main()
+    obj1, obj2 = main()
