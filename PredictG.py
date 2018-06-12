@@ -5,14 +5,15 @@ Created on Tue May 15 14:55:39 2018
 @author: Chris
 """
 
-import sys, os
-import pandas as pd
+#import sys, os
+#import pandas as pd
 import numpy as np
 import json
 import re
 from itertools import combinations
 from pymatgen.core.structure import Structure
 import pymatgen as mg
+import math
 
 class PredictG(object):
     """
@@ -169,31 +170,28 @@ class PredictG(object):
         num_els = len(names)
         num_atoms = np.sum(nums)        
         denom = (num_els - 1) * num_atoms
-        masses = [mass_d[el] for el in names]
         if denom <= 0:
-            return np.nan    
+            print('descriptor should not be applied to unary compounds (elements)')
+            return np.nan
+        masses = [mass_d[el] for el in names]
+        good_masses = [m for m in masses if not math.isnan(m)]
+        if len(good_masses) != len(masses):
+            for el in names:
+                if math.isnan(mass_d[el]):
+                    print('I dont have a mass for %s...' % el)
+                    return np.nan
         else:
-            count = 0
-            for el_feat in masses:
-                if el_feat != np.nan:
-                    count += 1
-            if count != num_els:
-                return np.nan
-            else:
-                pairs = list(combinations(names, 2))
-                pair_red_lst = []
-                for pair in range(len(pairs)):
-                    first_elem = names.index(pairs[pair][0])
-                    second_elem = names.index(pairs[pair][1])
-                    pair_coeff = float(nums[first_elem]) + float(nums[second_elem])
-                    pair_prod = float(masses[first_elem]) * float(masses[second_elem])
-                    pair_sum = float(masses[first_elem]) + float(masses[second_elem])
-                    if pair_sum != 0:
-                        pair_red = pair_coeff * pair_prod / pair_sum
-                        pair_red_lst.append(pair_red)
-                    else:
-                        pair_red_lst.append(np.nan)
-                return np.sum(pair_red_lst) / denom
+            pairs = list(combinations(names, 2))
+            pair_red_lst = []
+            for i in range(len(pairs)):
+                first_elem = names.index(pairs[i][0])
+                second_elem = names.index(pairs[i][1])
+                pair_coeff = nums[first_elem] + nums[second_elem]
+                pair_prod = masses[first_elem] * masses[second_elem]
+                pair_sum = masses[first_elem] + masses[second_elem]
+                pair_red = pair_coeff * pair_prod / pair_sum
+                pair_red_lst.append(pair_red)
+            return np.sum(pair_red_lst) / denom
             
     def V(self, vol_per_atom=False):
         """
@@ -268,18 +266,18 @@ def get_dGAl2O3_from_structure():
     print('------------------------------\n')
     return obj
 
-def get_dGAl2O3_without_structure():
+def get_dMgAl2O4_without_structure():
     """
     demonstration of how to get dG from inputted volume per atom
     """
     print('------------------------------')
-    initial_formula = 'Al2O3'
+    initial_formula = 'MgAl2O4'
     print('approximating dGf for %s...' % initial_formula)
     path_to_structure = False
-    V = 8.742 # A^3/atom
+    V = 9.7 # A^3/atom (assuming tabulated somewhere, e.g. Materials Project)
     path_to_masses = 'masses.json'
     path_to_chempots = 'Gels.json'
-    H = -3.442 # eV/atom
+    H = -3.404 # eV/atom
     obj = PredictG(initial_formula,
                    H,
                    path_to_structure,
@@ -294,10 +292,10 @@ def main():
     """
     run demonstrations
     Returns:
-        PredictG object
+        PredictG objects
     """
     obj1 = get_dGAl2O3_from_structure()
-    obj2 = get_dGAl2O3_without_structure()
+    obj2 = get_dMgAl2O4_without_structure()
     return obj1, obj2
 
 if __name__ == '__main__':
