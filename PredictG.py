@@ -214,9 +214,12 @@ class PredictG(object):
         Returns:
             G^delta as predicted by SISSO-learned descriptor (float) [eV/atom]
         """
-        m = self.m
-        V = self.V(vol_per_atom)
-        return (-2.48e-4*np.log(V) - 8.94e-5*m/V)*T + 0.181*np.log(T) - 0.882
+        if len(self.atom_names) == 1:
+            return 0
+        else:
+            m = self.m
+            V = self.V(vol_per_atom)
+            return (-2.48e-4*np.log(V) - 8.94e-5*m/V)*T + 0.181*np.log(T) - 0.882
     
     def summed_Gi(self, T):
         """
@@ -230,10 +233,27 @@ class PredictG(object):
         els_sum = 0
         for i in range(len(names)):
             el = names[i]
+            if el not in Gels[str(T)]:
+                return np.nan
             num = nums[i]
             Gi = Gels[str(T)][el]
             els_sum += num*Gi
         return els_sum
+    
+    def G(self, T, vol_per_atom=False):
+        """
+        Args:
+            T (int) - temperature [K]
+            vol_per_atom (float or bool) - if reading in structure file, False; else the calculated atomic volume [A^3/atom]        
+        Returns:
+            Absolute Gibbs energy at T using SISSO-learned descriptor for G^delta (float) [eV/atom]
+        """
+        if len(self.atom_names) == 1:
+            Gels = self.Gi_d
+            el = self.atom_names[0]
+            return Gels[str(T)][el]
+        else:
+            return self.H + self.Gd_sisso(T, vol_per_atom)
     
     def dG(self, T, vol_per_atom=False):
         """
@@ -242,8 +262,11 @@ class PredictG(object):
             vol_per_atom (float or bool) - if reading in structure file, False; else the calculated atomic volume [A^3/atom]        
         Returns:
             Gibbs formation energy at T using SISSO-learned descriptor for G^delta (float) [eV/atom]
-        """        
-        return ((self.H + self.Gd_sisso(T, vol_per_atom))*96.485*self.num_atoms - 96.485*self.summed_Gi(T)) / self.num_atoms / 96.485
+        """
+        if len(self.atom_names) == 1:
+            return 0.
+        else:
+            return ((self.H + self.Gd_sisso(T, vol_per_atom))*96.485*self.num_atoms - 96.485*self.summed_Gi(T)) / self.num_atoms / 96.485
 
 def get_dGAl2O3_from_structure():
     """
