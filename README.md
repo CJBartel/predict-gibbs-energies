@@ -2,6 +2,10 @@
 
 Repository associated with https://www.nature.com/articles/s41467-018-06682-4 used to predict the temperature-dependent Gibbs energies of inorganic crystalline solids.
 
+
+This repository is mostly static to coincide with the cited paper. For updates since this paper, please see github.com/CJBartel/compmatscipy which contains a similar (and more up-to-date module).
+
+
 ## Data files
 
   ### TableS1.csv 
