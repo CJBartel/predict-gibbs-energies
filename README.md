@@ -2,6 +2,8 @@
 
 Repository associated with https://arxiv.org/abs/1805.08155 used to predict the temperature-dependent Gibbs energies of inorganic crystalline solids.
 
+Also implemented in pymatgen (GibbsComputedStructureEntry) -- https://pymatgen.org/pymatgen.entries.computed_entries.html
+
 ## Data files
 
   ### TableS1.csv 
